@@ -292,4 +292,24 @@ describe OacisCli do
       end
     end
   end
+
+  describe "#archive_simulator and #unarchive_simulator" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "archives a simulator" do
+      expect {
+        OacisCli.new.invoke(:archive_simulator, [], {simulator: @sim.id.to_s})
+      }.to change { @sim.reload.archived }.from(false).to(true)
+    end
+
+    it "restores an archived simulator" do
+      @sim.archive
+      expect {
+        OacisCli.new.invoke(:unarchive_simulator, [], {simulator: @sim.id.to_s})
+      }.to change { @sim.reload.archived }.from(true).to(false)
+    end
+  end
 end
