@@ -126,4 +126,26 @@ EOS
       raise "validation of new parameter definition failed"
     end
   end
+
+  desc 'archive_simulator', "archive a simulator (hide from the list, keep the data)"
+  method_option :simulator,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'simulator ID or path to simulator_id.json',
+    required: true
+  def archive_simulator
+    simulator = get_simulator(options[:simulator])
+    simulator.archive
+  end
+
+  desc 'unarchive_simulator', "restore an archived simulator"
+  method_option :simulator,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'simulator ID or path to simulator_id.json',
+    required: true
+  def unarchive_simulator
+    simulator = get_simulator(options[:simulator])
+    simulator.unarchive
+  end
 end

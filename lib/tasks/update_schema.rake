@@ -58,6 +58,13 @@ namespace :db do
       progressbar.increment
     end
 
+    q = Simulator.where(archived: nil)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |sim|
+      sim.update_attribute(:archived, false)
+      progressbar.increment
+    end
+
     q = Analyzer.where(to_be_destroyed: nil)
     progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
     q.each do |azr|

@@ -31,6 +31,8 @@ Rails.application.routes.draw do
     end
     member do
       get "duplicate" if OACIS_ACCESS_LEVEL == 2
+      post "archive" if OACIS_ACCESS_LEVEL == 2     # hide from the list, keep the data
+      post "unarchive" if OACIS_ACCESS_LEVEL == 2   # restore an archived simulator
       get "export_runs"  # export runs in CSV
       get "_parameter_sets_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables

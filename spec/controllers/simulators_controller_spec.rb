@@ -51,6 +51,15 @@ describe SimulatorsController do
       get :index, params: {}
       expect(assigns(:simulators)).to eq sorted
     end
+
+    it "separates archived simulators into @simulators and @archived_simulators" do
+      active = Simulator.create! valid_attributes
+      archived = FactoryBot.create(:simulator, parameter_sets_count: 0)
+      archived.archive
+      get :index, params: {}
+      expect(assigns(:simulators)).to eq([active])
+      expect(assigns(:archived_simulators)).to eq([archived])
+    end
   end
 
   describe "GET show" do
@@ -423,6 +432,49 @@ describe SimulatorsController do
 
     it "redirects to the simulators list" do
       delete :destroy, params: {id: @sim.to_param}
+      expect(response).to redirect_to(simulators_url)
+    end
+  end
+
+  describe "POST archive" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "sets 'archived' to true" do
+      expect {
+        post :archive, params: {id: @sim.to_param}
+      }.to change { @sim.reload.archived }.from(false).to(true)
+    end
+
+    it "does not destroy the simulator" do
+      expect {
+        post :archive, params: {id: @sim.to_param}
+      }.to_not change { Simulator.unscoped.count }
+    end
+
+    it "redirects to the simulators list" do
+      post :archive, params: {id: @sim.to_param}
+      expect(response).to redirect_to(simulators_url)
+    end
+  end
+
+  describe "POST unarchive" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+      @sim.archive
+    end
+
+    it "sets 'archived' to false" do
+      expect {
+        post :unarchive, params: {id: @sim.to_param}
+      }.to change { @sim.reload.archived }.from(true).to(false)
+    end
+
+    it "redirects to the simulators list" do
+      post :unarchive, params: {id: @sim.to_param}
       expect(response).to redirect_to(simulators_url)
     end
   end

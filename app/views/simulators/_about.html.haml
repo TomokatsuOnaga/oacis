@@ -2,6 +2,10 @@
   - if OACIS_ACCESS_LEVEL == 2
     = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
     = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
+    - if simulator.archived
+      = link_to 'Restore', unarchive_simulator_path(simulator), method: :post, class: 'btn btn-success'
+    - else
+      = link_to 'Archive', archive_simulator_path(simulator), method: :post, data: { confirm: 'Archive this simulator? (you can restore it later)' }, class: 'btn btn-default'
     = link_to 'Delete', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
   = link_to 'Show in JSON', simulator_path(simulator, format: :json), class: 'btn btn-default'
 

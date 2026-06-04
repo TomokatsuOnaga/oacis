@@ -303,6 +303,56 @@ describe Simulator do
     end
   end
 
+  describe "#archive and #unarchive" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1, run_analysis: true
+                                )
+    end
+
+    it "sets 'archived' to true" do
+      expect {
+        @sim.archive
+      }.to change { @sim.archived }.from(false).to(true)
+    end
+
+    it "excludes archived simulator from 'not_archived' scope" do
+      expect {
+        @sim.archive
+      }.to change { Simulator.not_archived.where(id: @sim.id).exists? }.from(true).to(false)
+    end
+
+    it "includes archived simulator in 'only_archived' scope" do
+      expect {
+        @sim.archive
+      }.to change { Simulator.only_archived.where(id: @sim.id).exists? }.from(false).to(true)
+    end
+
+    it "keeps a simulator without 'archived' field in 'not_archived' scope" do
+      @sim.unset(:archived)
+      expect( Simulator.not_archived.where(id: @sim.id).exists? ).to be_truthy
+    end
+
+    it "does not affect Runs or Analyses (data is kept intact)" do
+      run_count = @sim.runs.count
+      anl_count = @sim.runs.first.analyses.count
+      @sim.archive
+      expect( @sim.reload.runs.count ).to eq run_count
+      expect( @sim.runs.first.analyses.count ).to eq anl_count
+    end
+
+    it "#unarchive restores 'archived' to false" do
+      @sim.archive
+      expect {
+        @sim.unarchive
+      }.to change { @sim.archived }.from(true).to(false)
+      expect( Simulator.not_archived.where(id: @sim.id).exists? ).to be_truthy
+    end
+  end
+
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do

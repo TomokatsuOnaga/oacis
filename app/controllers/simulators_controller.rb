@@ -2,7 +2,8 @@ class SimulatorsController < ApplicationController
   # GET /simulators
   # GET /simulators.json
   def index
-    @simulators = Simulator.asc(:position).all
+    @simulators = Simulator.not_archived.asc(:position).all
+    @archived_simulators = Simulator.only_archived.asc(:position).all
     FileUtils.mkdir_p( ResultDirectory.root ) # to assure the existence of the result dir
     rate = DiskSpaceChecker.rate
     flash[:alert] = "No enough space is left on device (Usage: #{rate*100}%)" if rate >= 0.9
@@ -130,6 +131,28 @@ class SimulatorsController < ApplicationController
   def destroy
     @simulator = Simulator.find(params[:id])
     @simulator.discard
+
+    respond_to do |format|
+      format.html { redirect_to simulators_url }
+      format.json { head :no_content }
+    end
+  end
+
+  # POST /simulators/1/archive
+  def archive
+    @simulator = Simulator.find(params[:id])
+    @simulator.archive
+
+    respond_to do |format|
+      format.html { redirect_to simulators_url }
+      format.json { head :no_content }
+    end
+  end
+
+  # POST /simulators/1/unarchive
+  def unarchive
+    @simulator = Simulator.find(params[:id])
+    @simulator.unarchive
 
     respond_to do |format|
       format.html { redirect_to simulators_url }

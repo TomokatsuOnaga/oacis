@@ -8,6 +8,7 @@ class Simulator
   field :sequential_seed, type: Boolean, default: false
   field :position, type: Integer # position in the table. start from zero
   field :to_be_destroyed, type: Boolean, default: false
+  field :archived, type: Boolean, default: false # hidden from the list but kept for later reference
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
@@ -16,6 +17,8 @@ class Simulator
   has_many :save_tasks, dependent: :destroy
 
   default_scope ->{ where(to_be_destroyed: false) }
+  scope :not_archived, ->{ where(:archived.in => [nil, false]) }
+  scope :only_archived, ->{ where(archived: true) }
 
   validates :name, presence: true, uniqueness: {scope: :to_be_destroyed}, format: {with: /\A\w+\z/}, unless: :to_be_destroyed
   validates :parameter_definitions, presence: true
@@ -218,6 +221,16 @@ class Simulator
   def discard
     update_attribute(:to_be_destroyed, true)
     set_lower_submittable_to_be_destroyed
+  end
+
+  # Archive hides the simulator from the list while keeping its data
+  # (ParameterSets / Runs / Analyses) intact, so it can be restored later.
+  def archive
+    update_attribute(:archived, true)
+  end
+
+  def unarchive
+    update_attribute(:archived, false)
   end
 
   def destroyable?
